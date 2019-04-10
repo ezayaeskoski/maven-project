@@ -1,46 +1,43 @@
 pipeline{
     agent any
 
-    tools {
-        maven 'localMaven'
-    }
+parameters{
+    string(name:'tomcat-dev',defaultValue:'35.160.236.71',description:'Staging Server')
+    string(name:'tomcat-prod',defaultValue:'52.37.158.33',description:'Production Server')
+}
 
-    stages{
+triggers{
+    pollSCM('* * * * *')
+}
+
+stages{
         stage('Build'){
-            steps{
+            steps {
                 sh 'mvn clean package'
             }
-            post{
-                success{
+            post {
+                success {
                     echo 'Now Archiving...'
                     archiveArtifacts artifacts: '**/target/*.war'
                 }
             }
         }
 
-        stage('Deploy to staging'){
-            steps{
-                build job:'deploy-to-staging'
-            }
-        }
-
-        stage ('Deploy to Production'){
-            steps{
-                timeout(time:5, unit:'DAYS'){
-                    input message:'Approve PRODUCTION Deployment?'
+        stage ('Deployments'){
+            parallel{
+                stage ('Deploy to Staging'){
+                    steps {
+                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
+                    }
                 }
 
-                build job: 'deploy-to-prod'
-            }
-            post {
-                success {
-                    echo 'Code deployed to Production.'
-                }
-
-                failure {
-                    echo ' Deployment failed.'
+                stage ("Deploy to Production"){
+                    steps {
+                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
+                    }
                 }
             }
         }
     }
+  
 }
