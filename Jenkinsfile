@@ -27,13 +27,13 @@ stages{
             parallel{
                 stage ('Deploy to Staging'){
                     steps {
-                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
+                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_dev}:8080/var/lib/tomcat7/webapps"
                     }
                 }
 
                 stage ("Deploy to Production"){
                     steps {
-                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
+                        sh "scp -i /home/ilegra/Documentos/projetos/estudos/amazon-ec2/tomcat-demo3.pem **/target/*.war ec2-user@${params.tomcat_prod}:8080/var/lib/tomcat7/webapps"
                     }
                 }
             }
